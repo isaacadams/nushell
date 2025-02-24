@@ -1,0 +1,50 @@
+ARG VARIANT
+FROM ubuntu:$VARIANT
+
+# Metadata labels (required for validation)
+LABEL Name="nushell" \
+      Version="1.0" \
+      Description="A nushell environment with nupm and polars installed" \
+      Maintainer="Isaac Adams"
+
+# Set noninteractive mode to avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install necessary packages
+RUN apt update && apt upgrade -y && \
+    apt install -y
+
+# Install dependencies
+RUN apt update && apt install -y \
+    curl wget git \
+    xz-utils unzip rsync \
+    build-essential gcc make libssl-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Homebrew
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Add Homebrew to PATH
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+
+# Install Nushell using Homebrew
+RUN brew install nushell
+
+# download and install nupm (Nu package manager)
+RUN mkdir -p /source/nupm && \
+    git clone https://github.com/nushell/nupm.git /source/nupm
+
+# Set Nushell as the default shell (optional)
+SHELL ["/home/linuxbrew/.linuxbrew/bin/nu", "-c"]
+
+RUN mkdir /root/.config/nushell/nupm
+RUN use /source/nupm/nupm ; nupm install /source/nupm --force --path
+
+# Install the polars module using nupm
+#RUN nupm install polars
+
+# Verify installations
+#RUN nupm list
+
+# Start an interactive Nushell session by default
+CMD ["/home/linuxbrew/.linuxbrew/bin/nu"]
