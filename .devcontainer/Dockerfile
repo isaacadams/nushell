@@ -34,17 +34,21 @@ RUN brew install nushell
 RUN mkdir -p /source/nupm && \
     git clone https://github.com/nushell/nupm.git /source/nupm
 
+# Make nupm available globally by adding it to config.nu
+RUN mkdir -p /root/.config/nushell/nupm
+RUN echo 'use /source/nupm/nupm' >> /root/.config/nushell/config.nu
+
+# install nutest
+RUN mkdir -p /source/nutest && git clone https://github.com/vyadh/nutest.git /source/nutest
+RUN echo 'use /source/nutest/nutest' >> /root/.config/nushell/config.nu
+
 # Set Nushell as the default shell (optional)
 SHELL ["/home/linuxbrew/.linuxbrew/bin/nu", "-c"]
 
-RUN mkdir /root/.config/nushell/nupm
 RUN use /source/nupm/nupm ; nupm install /source/nupm --force --path
 
-# Install the polars module using nupm
-#RUN nupm install polars
-
-# Verify installations
-#RUN nupm list
+# register the polars plugin
+RUN plugin add /home/linuxbrew/.linuxbrew/bin/nu_plugin_polars
 
 # Start an interactive Nushell session by default
 CMD ["/home/linuxbrew/.linuxbrew/bin/nu"]
