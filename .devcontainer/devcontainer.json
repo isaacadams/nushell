@@ -22,7 +22,7 @@
   // Configure tool-specific properties.
   "customizations": {
     "vscode": {
-      "extensions": []
+      "extensions": ["TheNuProjectContributors.vscode-nushell-lang"]
     }
   },
   "mounts": [
