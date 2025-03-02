@@ -22,7 +22,7 @@
   // Configure tool-specific properties.
   "customizations": {
     "vscode": {
-      "extensions": ["TheNuProjectContributors.vscode-nushell-lang"]
+      "extensions": ["TheNuProjectContributors.vscode-nushell-lang", "yy0931.vscode-sqlite3-editor"]
     }
   },
   "mounts": [
