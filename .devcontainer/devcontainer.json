@@ -22,7 +22,12 @@
   // Configure tool-specific properties.
   "customizations": {
     "vscode": {
-      "extensions": ["TheNuProjectContributors.vscode-nushell-lang", "yy0931.vscode-sqlite3-editor"]
+      "extensions": [
+        "TheNuProjectContributors.vscode-nushell-lang",
+        "yy0931.vscode-sqlite3-editor",
+        "mtxr.sqltools",
+        "Evidence.sqltools-duckdb-driver"
+      ]
     }
   },
   "mounts": [

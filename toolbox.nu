@@ -110,7 +110,14 @@ def flatten-record-paths [separator: string, ctx?: string] {
             $input
             | enumerate
             | each { |e|
-                  {path: ([$ctx $e.index] | str join $separator), value: $e.item}
+                match ($e.item | describe-primitive) {
+                    "record" | "table" | "list" | "block" | "closure" => {
+                        $e.item | flatten-record-paths $separator ([$ctx $e.index] | str join $separator)
+                    }
+                    _ => {
+                        { path: ([$ctx $e.index] | str join $separator), value: $e.item }
+                    }
+                }
               }
         },
         "table" => {

@@ -30,6 +30,13 @@ ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
 # Install Nushell using Homebrew
 RUN brew install nushell
 
+# install duckdb
+# releases: https://github.com/duckdb/duckdb/releases
+ARG DUCKDB_VERSION=v1.2.0
+RUN curl -L "https://github.com/duckdb/duckdb/releases/download/${DUCKDB_VERSION}/duckdb_cli-linux-amd64.zip" -o /tmp/duckdb.zip \
+    && unzip /tmp/duckdb.zip -d /usr/local/bin \
+    && rm -rf /tmp/duckdb.zip
+
 # download and install nupm (Nu package manager)
 RUN mkdir -p /source/nupm && \
     git clone https://github.com/nushell/nupm.git /source/nupm
