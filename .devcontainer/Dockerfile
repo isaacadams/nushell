@@ -61,11 +61,9 @@ ENV PATH="/home/linuxbrew/.cargo/bin:${PATH}"
 RUN brew install nushell
 
 # Make nupm and nutest available globally by adding it to config.nu
-#USER root
 RUN mkdir -p ~/.config/nushell/nupm
 RUN echo 'use /home/linuxbrew/source/nupm/nupm' >> ~/.config/nushell/config.nu
 RUN echo 'use /home/linuxbrew/source/nutest/nutest' >> ~/.config/nushell/config.nu
-#USER linuxbrew
 
 # Set Nushell as the default shell (optional)
 SHELL ["/home/linuxbrew/.linuxbrew/bin/nu", "-c"]
