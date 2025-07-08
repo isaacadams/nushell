@@ -17,18 +17,9 @@ RUN apt update && apt upgrade -y && \
 # Install dependencies
 RUN apt update && apt install -y \
     curl wget git \
-    xz-utils unzip rsync \
+    xz-utils unzip rsync sudo \
     build-essential gcc make libssl-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Homebrew
-RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Add Homebrew to PATH
-ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
-
-# Install Nushell using Homebrew
-RUN brew install nushell
 
 # install duckdb
 # releases: https://github.com/duckdb/duckdb/releases
@@ -37,22 +28,49 @@ RUN curl -L "https://github.com/duckdb/duckdb/releases/download/${DUCKDB_VERSION
     && unzip /tmp/duckdb.zip -d /usr/local/bin \
     && rm -rf /tmp/duckdb.zip
 
-# download and install nupm (Nu package manager)
-RUN mkdir -p /source/nupm && \
-    git clone https://github.com/nushell/nupm.git /source/nupm
+# Create a non-root user for Homebrew
+RUN useradd -m -s /bin/bash linuxbrew && \
+    mkdir -p /etc/sudoers.d && \
+    echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/linuxbrew && \
+    chmod 440 /etc/sudoers.d/linuxbrew
 
-# Make nupm available globally by adding it to config.nu
-RUN mkdir -p /root/.config/nushell/nupm
-RUN echo 'use /source/nupm/nupm' >> /root/.config/nushell/config.nu
+# Switch to the linuxbrew user
+USER linuxbrew
+WORKDIR /home/linuxbrew
 
-# install nutest
-RUN mkdir -p /source/nutest && git clone https://github.com/vyadh/nutest.git /source/nutest
-RUN echo 'use /source/nutest/nutest' >> /root/.config/nushell/config.nu
+# download nupm (Nu package manager)
+RUN mkdir -p /home/linuxbrew/source/nupm && \
+    git clone https://github.com/nushell/nupm.git /home/linuxbrew/source/nupm
+
+# download nutest
+RUN mkdir -p /home/linuxbrew/source/nutest && \
+    git clone https://github.com/vyadh/nutest.git /home/linuxbrew/source/nutest
+
+# Install Homebrew
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Add Homebrew to PATH
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH"
+
+# Install rustup via Homebrew
+RUN brew install rustup-init
+RUN rustup-init -y
+ENV PATH="/home/linuxbrew/.cargo/bin:${PATH}"
+
+# Install Nushell using Homebrew
+RUN brew install nushell
+
+# Make nupm and nutest available globally by adding it to config.nu
+#USER root
+RUN mkdir -p ~/.config/nushell/nupm
+RUN echo 'use /home/linuxbrew/source/nupm/nupm' >> ~/.config/nushell/config.nu
+RUN echo 'use /home/linuxbrew/source/nutest/nutest' >> ~/.config/nushell/config.nu
+#USER linuxbrew
 
 # Set Nushell as the default shell (optional)
 SHELL ["/home/linuxbrew/.linuxbrew/bin/nu", "-c"]
 
-RUN use /source/nupm/nupm ; nupm install /source/nupm --force --path
+RUN use /home/linuxbrew/source/nupm/nupm ; nupm install --path /home/linuxbrew/source/nupm -f
 
 # register the polars plugin
 RUN plugin add /home/linuxbrew/.linuxbrew/bin/nu_plugin_polars
